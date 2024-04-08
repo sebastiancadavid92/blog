@@ -6,7 +6,7 @@ class UserTeamModelCreateTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(first_name='test name',last_name='last name test',
+        cls.user = User.objects.create(first_name='test name',last_name='last name test',
                                         email='test@test.com',birthdate='1992-05-25',
                                         username='testuser', password='testpassword')
         cls.team = Team.objects.create(team_name='Test Team')
@@ -22,6 +22,7 @@ class UserTeamModelCreateTest(TestCase):
         self.assertEqual(userdb.email,'test@test.com')
         self.assertEqual(userdb.birthdate.strftime('%Y-%m-%d'),'1992-05-25')
         self.assertEqual(userdb.check_password('testpassword'),True)
+        
         self.assertEqual(userdb.is_admin,False)
 
 

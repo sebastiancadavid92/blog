@@ -20,7 +20,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError(_('The Email must be set'))
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)
+        user.password=password
         user.save(using=self._db)
         return user
 
@@ -59,3 +59,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
     
+    def save(self, *args, **kwargs):
+        # Tu implementación personalizada del método save aquí
+            # Por ejemplo, puedes realizar alguna validación adicional antes de guardar el objeto
+        self.password == self.set_password(self.password)    
+        super().save(*args, **kwargs) 

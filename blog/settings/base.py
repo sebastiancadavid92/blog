@@ -140,9 +140,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         # Otros clases de autenticación si las necesitas
     ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+   ## 'DEFAULT_PERMISSION_CLASSES': [
+   ##     'rest_framework.permissions.IsAuthenticated',
+   ## ],
     # Otros ajustes de DRF
 }
 """A

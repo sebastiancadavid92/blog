@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
 
 from django.contrib.sessions.models import Session
 
@@ -32,8 +33,7 @@ def login_view(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
-    if not request.session.session_key:
-         return Response({'error':'user is already logged out'},status=status.HTTP_400_BAD_REQUEST)
     logout(request)
     return Response({'message':'Successfull logout'},status=status.HTTP_200_OK)

@@ -13,7 +13,7 @@ class UserTeamModelCreateTest(TestCase):
         
 
 
-    def test_create_user(self):
+    def testCreateUser(self):
         userdb=User.objects.filter(id=self.user.id).first()
         self.assertIsInstance(self.user, User)
         self.assertEqual(userdb.username,'testuser')
@@ -27,13 +27,13 @@ class UserTeamModelCreateTest(TestCase):
 
 
 
-    def test_create_team(self):
+    def testCreateTeam(self):
         teamdb=Team.objects.get(id=self.team.id)
         self.assertIsInstance(teamdb, Team)
         self.assertEqual(teamdb.team_name, 'Test Team')
 
 
-    def test_assign_user_to_team(self):
+    def testAssignUserToTeam(self):
 
         userdb = User.objects.get(id=self.user.id)
         userdb.team = self.team
@@ -43,7 +43,7 @@ class UserTeamModelCreateTest(TestCase):
         userdb2 = User.objects.get(id=self.user.id)
         self.assertEqual(userdb2.team, self.team)
 
-    def test_user_creation_with_team(self):
+    def testUserCreationWithTeam(self):
 
         team2 = Team.objects.create(team_name='Test Team2')
         

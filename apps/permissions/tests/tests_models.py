@@ -1,6 +1,6 @@
 from django.test import TestCase
-from .factories import *
-from .models import *
+from ..factories import *
+from ..models import *
 from apps.posts.factories import PostFactory
 from django.db import IntegrityError
 class test_PermissionCategoryPost(TestCase):
@@ -41,9 +41,6 @@ class test_PermissionCategoryPost(TestCase):
                 elif 15<=i<=17 and cate.categoryname=='AUTHENTICATED':
                     PermissionCategoryPostFactory.create(post=cls.post[i],category=cate, permission=cls.permissions[1])
 
-
-
-
     def testCreateCatgories(self):
         self.assertIsInstance(self.categories[0],Category)
 
@@ -66,5 +63,12 @@ class test_PermissionCategoryPost(TestCase):
         postreamread=Post.objects.filter(permissioncategorypost__category__categoryname='TEAM',
                                             permissioncategorypost__permission__permissionname='READ_ONLY')
         self.assertEqual((postreamread.union(postsauthornone)).count(),3*3) 
+    
+    def testDeletePermissionCategorybyDeletingaPost(self):
+        postdb=Post.objects.filter(id=self.post[0].id)
+        postdb.delete()
+        self.assertEqual(PermissionCategoryPost.objects.all().count(),17*4)
+        self.assertEqual(Permission.objects.all().count(),3)
+        self.assertEqual(Category.objects.all().count(),4)
     
 # Create your tests here.

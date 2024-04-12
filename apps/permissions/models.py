@@ -1,22 +1,37 @@
 from django.db import models
 from apps.posts.models import Post
 # Create your models here.
+
+
+CATEGORY_NAME_CHOICES=(
+    ("PUBLIC","Public"),
+    ("AUTHENTICATED","Authenticated"),
+    ("TEAM","Team"),
+    ("AUTHOR","Author")
+    )
+PERMISSION_NAME_CHOICES= (
+    ("READ_ONLY","Read Only"),
+    ("EDIT","Read and Edit"),
+    ("NONE","None"),
+    )
+
+
 class Category (models.Model):
-    categoryname=models.CharField(unique=True,blank=True, null=True)
+    categoryname=models.CharField( choices=CATEGORY_NAME_CHOICES,default=None)
 
     def __str__(self):
-        return self.category_name
+        return self.categoryname
 
 
 class Permission (models.Model):
-    permissionname=models.CharField(unique=True,blank=True)
+    permissionname=models.CharField(choices=PERMISSION_NAME_CHOICES,default=None)
     def __str__(self):
-        return self.permission_name
+        return self.permissionname
 
 class PermissionCategoryPost(models.Model):
     category=models.ForeignKey(Category,on_delete=models.CASCADE)
     permission=models.ForeignKey(Permission, on_delete=models.CASCADE)
-    post= models.ForeignKey(Post, on_delete= models.CASCADE)
+    post= models.ForeignKey(Post, on_delete= models.CASCADE,related_name='postinverse')
     class Meta:
         constraints=[
 

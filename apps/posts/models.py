@@ -22,6 +22,7 @@ class Post(models.Model):
         return self.title
     
 
+
     
 class Like (models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)

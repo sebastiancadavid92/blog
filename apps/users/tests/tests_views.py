@@ -64,7 +64,8 @@ class RegistrationAPITestCase(APITestCase):
             "last_name":"last name",
             "email":"test@mail.com",
             "password":"123",
-            "passwordconfirmation":"123"
+            "passwordconfirmation":"123",
+            "team":"test team"
         }
     def test_RegisterUser(self):
         response=self.client.post(self.urlregister,self.userdata,format='json')

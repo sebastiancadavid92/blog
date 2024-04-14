@@ -41,11 +41,11 @@ def LogoutView(request):
 @api_view(['POST'])
 def RegisterView(request):
     if request.user.is_authenticated:
-         import pdb;pdb.set_trace()
          return Response({'error':'authenticated users cant register users'},status=status.HTTP_403_FORBIDDEN)
     serializer=UserModelSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+        
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     

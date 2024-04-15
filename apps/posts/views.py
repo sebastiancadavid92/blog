@@ -1,10 +1,12 @@
 from apps.posts.serializer import CreationPostModelSerializer,PermissionModelSerializer,CategoryModelSerializer,PermissionCategoryPostModelSerializer
-from rest_framework.generics import CreateAPIView,DestroyAPIView
+from rest_framework.generics import CreateAPIView,GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,decorators
 from django.db import transaction
 from .models import Post
+from .permissionclass import PostPermissionRead, PostPermissionEdit
+from rest_framework.mixins import RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
 # Create your views here.
 class PostCreateAPIView(CreateAPIView):
     serializer_class=CreationPostModelSerializer
@@ -42,8 +44,20 @@ class PostCreateAPIView(CreateAPIView):
                 return Response(data2.data,status=status.HTTP_201_CREATED)
             return Response(serializerblog.errors,status=status.HTTP_400_BAD_REQUEST)
 
-class PostDeleteAPIView(DestroyAPIView):
+class PostGetDeleteAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin,GenericAPIView):
+    serializer_class:CreationPostModelSerializer
     queryset=Post.objects.all()
     
-	
+    @decorators.permission_classes([PostPermissionEdit])
+    def update(self, request, *args, **kwargs):
+        return super().update(self, request, *args, **kwargs)
+    
+    @decorators.permission_classes([PostPermissionRead])
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
+    
+    @decorators.permission_classes([PostPermissionEdit])
+    def delete(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
+    
 	

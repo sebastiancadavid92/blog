@@ -24,3 +24,8 @@ class PostPermissionRead(BasePermission):
         elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'or permissiondict.get('PUBLIC')=='READ_ONLY' ):
             return True
         return False
+    
+class PostPermissionEdit(BasePermission):
+    
+    def has_object_permission(self, request, view, obj):
+        return True

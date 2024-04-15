@@ -6,6 +6,6 @@ from django.urls import path
 
 urlpatterns = [
     path('',PostCreateAPIView.as_view(),name='postcreation'),
-    path('/<int:id>',PostGetDeleteAPIView.as_view(),name='getdeletepost')
+    path('<pk>/',PostGetDeleteAPIView.as_view(),name='getdeletepost')
 ]
 

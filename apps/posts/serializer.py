@@ -16,7 +16,7 @@ class CreationPostModelSerializer(ModelSerializer):
     permission=serializers.DictField(write_only=True)
     class Meta:
         model=Post
-        fields=['title','content','permission']
+        fields=['title','content','permission','id']
 
     def validate_permission(self,value):
         #import pdb;pdb.set_trace()
@@ -31,6 +31,7 @@ class CreationPostModelSerializer(ModelSerializer):
     def save(self, **kwargs):
         
         permission=self.validated_data.pop('permission')
+        import pdb;pdb.set_trace()
         blog=super().save(**kwargs)
         return blog,permission
 

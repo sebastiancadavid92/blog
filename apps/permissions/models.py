@@ -38,4 +38,4 @@ class PermissionCategoryPost(models.Model):
             models.UniqueConstraint(fields=['post','category'], name='unique_post_n_category')
         ]
     def __str__(self):
-        return str(self.post.id)+"->" +self.category.category_name +"="+ self.permission.permission_name
+        return str(self.post.id)+"->" +self.category.categoryname +"="+ self.permission.permissionname

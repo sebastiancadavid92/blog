@@ -1,6 +1,6 @@
 from apps.posts.serializer import CreationPostModelSerializer,PermissionModelSerializer,CategoryModelSerializer,PermissionCategoryPostModelSerializer
 from rest_framework.generics import CreateAPIView,GenericAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from rest_framework import status,decorators
 from django.db import transaction
@@ -45,19 +45,46 @@ class PostCreateAPIView(CreateAPIView):
             return Response(serializerblog.errors,status=status.HTTP_400_BAD_REQUEST)
 
 class PostGetDeleteAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin,GenericAPIView):
-    serializer_class:CreationPostModelSerializer
+    serializer_class=CreationPostModelSerializer
     queryset=Post.objects.all()
+
+    """     def dispatch(self, request, *args, **kwargs):
+        if request.method=='DELETE':
+            self.delete(self, request, *args, **kwargs)
+        elif request.method=='GET':
+            self.get(self, request, *args, **kwargs)
+        elif request.method=='PATCH':
+            self.update(self, request, *args, **kwargs)
+        else:
+            return Response({'error':'method not accpeted'},status=status.HTTP_400_BAD_REQUEST)
+    """
+
+   
     
-    @decorators.permission_classes([PostPermissionEdit])
-    def update(self, request, *args, **kwargs):
-        return super().update(self, request, *args, **kwargs)
+    def get_permissions(self):
+        
+        if self.request.method == 'GET':
+            return [PostPermissionRead()]
+        elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            return [PostPermissionEdit()]
+        return False
+
+
+     
+    def patch(self, request, *args, **kwargs):
+        
+        permission=request.data['permission']
+
+        import pdb;pdb.set_trace()
+        return super().update(request, *args, **kwargs)
     
-    @decorators.permission_classes([PostPermissionRead])
+ 
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
     
-    @decorators.permission_classes([PostPermissionEdit])
+ 
     def delete(self, request, *args, **kwargs):
+
         return super().destroy(request, *args, **kwargs)
     
 	

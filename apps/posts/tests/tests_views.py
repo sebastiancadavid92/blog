@@ -167,12 +167,11 @@ class PostGetViewTest(APITestCase):
                         "AUTHENTICATED":"EDIT" }
                     }
         self.idpublic=self.client.post(self.urlcreatepost,self.postpublicedit,format='json').data.get('id')
-        import pdb;pdb.set_trace()
         self.client.post(self.urlcreatepost,self.postauthedit,format='json')
         self.client.post(self.urlcreatepost,self.postteamedit,format='json')
         self.client.post(self.urlcreatepost,self.postauthenedit,format='json')
 
     def testPostGet(self):
         response=self.client.get(reverse('getdeletepost',kwargs={'pk':self.idpublic}))
-        self.assertEqual(response,status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code,status.HTTP_403_FORBIDDEN)
 

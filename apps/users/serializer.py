@@ -10,10 +10,11 @@ from django.db import IntegrityError
 
 class UserModelSerializer(ModelSerializer):
     passwordconfirmation = serializers.CharField(write_only=True,required=True)
-    team=serializers.CharField(write_only=True,required=True)
+    team=serializers.CharField(write_only=True,required=False,default='DEFAULT')
     class Meta:
         model=User
         fields=['first_name','last_name','email','username','birthdate','is_admin','passwordconfirmation','password','team']
+        
     def to_representation(self, instance):
         data= super().to_representation(instance)
         data.pop('password')

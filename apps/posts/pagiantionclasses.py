@@ -1,10 +1,11 @@
 from rest_framework.pagination import PageNumberPagination
 
 class Pagination(PageNumberPagination):
-    page_size = 2
+    page_size = 10
     max_page_size = 100
 
     def paginate_queryset(self, queryset, request, view=None):
+       
         self.total_queryset = queryset.count()  # Guardar el número total de elementos en el queryset
         return super().paginate_queryset(queryset, request, view)
 

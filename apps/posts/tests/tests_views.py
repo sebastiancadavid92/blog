@@ -110,6 +110,41 @@ class PostCreationViewTest(APITestCase):
        response=self.client.post(self.urlcreatepost,datab,format='json')
        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
 
+    def testPostCreationWithNoPermissions(self):
+       datab= { "title":"Este es el titulo del post",
+                "content":"este es todo el contenido que tiene el post, se supone que debe tener mas de 200 caracteres para poder ver como funciona el metodo exctp pero no creo que logre alcanzar ese numero. o si? seguiere escribiendo y espero que si lo alcance . sino pues luego probare el metodo excpt de otra forma ",
+                "permission":{}
+
+                 }
+       response=self.client.post(self.urlcreatepost,datab,format='json')
+       self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+    def testPostCreationWithNoPermissions(self):
+       datab= { "title":"Este es el titulo del post",
+                "content":"este es todo el contenido que tiene el post, se supone que debe tener mas de 200 caracteres para poder ver como funciona el metodo exctp pero no creo que logre alcanzar ese numero. o si? seguiere escribiendo y espero que si lo alcance . sino pues luego probare el metodo excpt de otra forma ",
+
+                 }
+       response=self.client.post(self.urlcreatepost,datab,format='json')
+       self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+    
+    def testPostCreationWithExtraCategory(self):
+       datab= { "title":"Este es el titulo del post",
+                "content":"este es todo el contenido que tiene el post, se supone que debe tener mas de 200 caracteres para poder ver como funciona el metodo exctp pero no creo que logre alcanzar ese numero. o si? seguiere escribiendo y espero que si lo alcance . sino pues luego probare el metodo excpt de otra forma ",
+                "permission":{
+                    "PUBLIC":"READ_ONLY",
+                    "AUTHOR":"EDIT",
+                    "EXTRACATEG":"READ_ONLY",
+                    "TEAM":"NONE",
+                    "AUTHENTICATED":"EDIT" }
+
+                 }
+       response=self.client.post(self.urlcreatepost,datab,format='json')
+       self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+
 class PostGetViewTest(APITestCase):
     def setUp(self):
 
@@ -388,10 +423,17 @@ class PostGetViewTest(APITestCase):
         self.assertEqual(response.data.get('content'),postupdate.get('content'))
         
 
-    class PostListViewTest(APITestCase):
+class PostListViewTest(APITestCase):
          
-         def setUp(self):
-            userdata={
+    def setUp(self):
+
+        self.urlregister=reverse('register')                                    
+        self.urllongin=reverse('login')
+        self.urllogout=reverse('logout')
+        self.urlcreatepost=reverse('postcreationlist')
+
+
+        userdata={
                 "username":"username",
                 "first_name":"first name",
                 "last_name":"last name",
@@ -400,13 +442,13 @@ class PostGetViewTest(APITestCase):
                 "passwordconfirmation":"123",
                 "team":"team1"
             }
-            self.client.post(self.urlregister,self.userdata,format='json')
+        self.client.post(self.urlregister, userdata,format='json')
 
-            self.logindata1={
+        self.logindata1={
                 'username':"test@mail.com",
                 'password':'123'
             }
-            userdata={
+        userdata={
                 "username":"username2",
                 "first_name":"first name",
                 "last_name":"last name",
@@ -415,51 +457,138 @@ class PostGetViewTest(APITestCase):
                 "passwordconfirmation":"123",
                 "team":"team1"
             }
-            self.client.post(self.urlregister,self.userdata,format='json')
+        self.client.post(self.urlregister,userdata,format='json')
 
-            self.logindata2={
+        self.logindata2={
                 'username':"test2@mail.com",
                 'password':'123'
             }
 
-            userdata={
+        userdata={
                 "username":"username3",
                 "first_name":"first name",
                 "last_name":"last name",
-                "email":"test2@mail.com",
+                "email":"test3@mail.com",
                 "password":"123",
                 "passwordconfirmation":"123",
                 "team":"team2"
             }
-            self.client.post(self.urlregister,self.userdata,format='json')
+        self.client.post(self.urlregister,userdata,format='json')
             
 
-            self.logindata3={
+        self.logindata3={
                 'username':"test3@mail.com",
                 'password':'123'
             }
 
-            self.client.post(self.urllongin,self.logindata1,format='json')
+        self.client.post(self.urllongin,self.logindata1,format='json')
 
-            self.permissions=['EDIT','READ_ONLY','NONE']
+        self.permission=['EDIT','READ_ONLY','NONE']
 
-            for i in range(100):
-                datapost={ "title":"title"+str(i),
+        for i in range(100):
+            datapost={ "title":"title"+str(i),
                     "content":"content",
                     "permission":{
-                        "PUBLIC":self.permission[random.randint(0, 3)],
-                        "AUTHOR":self.permission[random.randint(0, 3)],
-                        "TEAM":"NONE",
-                        "AUTHENTICATED":"NONE" }
+                        "PUBLIC":self.permission[random.randint(0, 2)],
+                        "AUTHOR":self.permission[random.randint(0, 2)],
+                        "TEAM":self.permission[random.randint(0, 2)],
+                        "AUTHENTICATED":self.permission[random.randint(0, 2)]
+                        
+                        }
                     }
-                self.client.post(self.urlcreatepost,datapost,format='json')
+            self.client.post(self.urlcreatepost,datapost,format='json')
 
 
-            self.urlregister=reverse('register')                                    
-            self.urllongin=reverse('login')
-            self.urllogout=reverse('logout')
-            self.urlcreatepost=reverse('postcreationlist')
 
+
+    def testAuthorList(self):
+        response=self.client.get(self.urlcreatepost,format='json')
+        total=Post.objects.filter(postinverse__category__categoryname='AUTHOR',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).count()
+        self.assertEqual(total,response.data.get('count'))
+
+    def testTeamlist(self):
+        self.client.get(self.urllogout)
+        self.client.post(self.urllongin,self.logindata2)
+        response=self.client.get(self.urlcreatepost,format='json')
+        total=Post.objects.filter(postinverse__category__categoryname='TEAM',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).count()
+        self.assertEqual(total,response.data.get('count'))
+    
+    def testAuthenticatedlist(self):
+        self.client.get(self.urllogout)
+        self.client.post(self.urllongin,self.logindata3)
+        response=self.client.get(self.urlcreatepost,format='json')
+        total=Post.objects.filter(postinverse__category__categoryname='AUTHENTICATED',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).count()
+        self.assertEqual(total,response.data.get('count'))
+
+    def testPubliclist(self):
+        self.client.get(self.urllogout)
+        response=self.client.get(self.urlcreatepost,format='json')
+        total=Post.objects.filter(postinverse__category__categoryname='PUBLIC',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).count()
+        self.assertEqual(total,response.data.get('count'))
+
+    def testAdminList(self):
+        self.client.get(self.urllogout)
+        userdata={
+            "username":"username5",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test5@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team",
+            "is_admin":"True"
+        }
+        logindata={
+            'username':"test5@mail.com",
+            'password':'123'
+        }
+        self.client.post(self.urlregister,userdata,format='json')
+        self.client.post(self.urllongin,logindata,format='json')
+        response=self.client.get(self.urlcreatepost,format='json')
+        total=Post.objects.all().count()
+        self.assertEqual(total,response.data.get('count'))
+
+    def testEmptylistPublic(self):
+        self.client.get(self.urllogout)
+        Post.objects.filter(postinverse__category__categoryname='PUBLIC',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).delete()
+        response=self.client.get(self.urlcreatepost,format='json')
+        self.assertEqual(response.data,{})
+        self.assertIsNone(response.data.get('count'))
+
+    def testEmptylistAuthenticated(self):
+        self.client.get(self.urllogout)
+        self.client.post(self.urllongin,self.logindata3)
+        Post.objects.filter(postinverse__category__categoryname='AUTHENTICATED',postinverse__permission__permissionname__in=['EDIT','READ_ONLY']).delete()
+        response=self.client.get(self.urlcreatepost,format='json')
+        self.assertEqual(response.data,{})
+        self.assertIsNone(response.data.get('count'))
+    
+    def testEmptylistAdmin(self):
+        self.client.get(self.urllogout)
+        userdata={
+            "username":"username5",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test5@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team",
+            "is_admin":"True"
+        }
+        logindata={
+            'username':"test5@mail.com",
+            'password':'123'
+        }
+        self.client.post(self.urlregister,userdata,format='json')
+        self.client.post(self.urllongin,logindata,format='json')
+        Post.objects.all().delete()
+        response=self.client.get(self.urlcreatepost,format='json')
+        self.assertEqual(response.data,{})
+        self.assertIsNone(response.data.get('count'))
+        
+
+        
+        
 
                     
              

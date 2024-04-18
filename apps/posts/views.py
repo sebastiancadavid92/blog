@@ -8,7 +8,7 @@ from django.db.models import Q
 
 from apps.posts.serializer import CreationPostModelSerializer
 from .models import Post
-from .permissionclass import PostPermissionRead, PostPermissionEdit, DenyAccess
+from .permissionclass import PostPermissionRead, PostPermissionEdit
 from .pagiantionclasses import Pagination
 # Create your views here.
 
@@ -22,7 +22,7 @@ class PostCreateListAPIView(ListCreateAPIView):
             return [IsAuthenticated()]
         elif self.request.method == 'GET':
             return [AllowAny()]
-        return [DenyAccess()] 
+       
 
     def get_queryset1(self):
         user=self.request.user
@@ -31,7 +31,6 @@ class PostCreateListAPIView(ListCreateAPIView):
         query_part_3 = ~Q(author__team=user.team)&Q(postinverse__category__categoryname='AUTHENTICATED', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
         query = query_part_1 | query_part_2 | query_part_3
         queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
-        import pdb;pdb.set_trace()
         return queryset
     
     def get_queryset2(self):
@@ -48,39 +47,32 @@ class PostCreateListAPIView(ListCreateAPIView):
            if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
            
-           page = self.paginate_queryset(query)
+           page = self.paginate_queryset(query.order_by('id'))
 
            if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
-           
-           serializer = self.get_serializer(query, many=True)
-           return Response(serializer.data, status=status.HTTP_200_OK)  # Devuelve la respuesta sin paginación
+           # Devuelve la respuesta sin paginación
             
         elif self.request.user.is_admin:
             query=Post.objects.all()
             if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
             #####
-            page = self.paginate_queryset(query)
+            page = self.paginate_queryset(query.order_by('id'))
             if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
            
-            serializer = self.get_serializer(query, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK) 
         
         else:
             query=self.get_queryset1()
             if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
-            page = self.paginate_queryset(query)
+            page = self.paginate_queryset(query.order_by('id'))
             if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
-           
-            serializer = self.get_serializer(query, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK) 
 
 
 
@@ -106,7 +98,7 @@ class PostGetDeleteUpdateAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateMode
             return [PostPermissionRead()]
         elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
             return [PostPermissionEdit()]
-        return [DenyAccess()]
+      
 
      
     def patch(self, request, *args, **kwargs):

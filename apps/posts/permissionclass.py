@@ -60,6 +60,3 @@ class PostPermissionEdit(BasePermission):
         elif user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='EDIT'):
             return True
 
-class DenyAccess(BasePermission):
-    def has_permission(self, request, view):
-        return False

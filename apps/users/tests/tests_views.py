@@ -20,6 +20,21 @@ class AutenticacionAPITestCase(APITestCase):
         self.assertIsNotNone(response.cookies['csrftoken'].value)
         self.assertIsNotNone(Session.objects.filter(session_key=response.cookies['sessionid'].value))
         
+    def testBadLogin(self):
+        data={'username':'','password':'123'}
+        response = self.client.post(self.urllongin, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND) 
+    
+    def testBadLogin2(self):
+        data={'username':'test@test.com','password':''}
+        response = self.client.post(self.urllongin, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND) 
+    
+    def testBadLogin3(self):
+        data={'username':'','password':''}
+        response = self.client.post(self.urllongin, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND) 
+
 
     def testLoginBadData(self):
 
@@ -94,6 +109,76 @@ class RegistrationAPITestCase(APITestCase):
         self.assertIsInstance(response.data['password'],list)
         self.assertIsInstance(response.data['passwordconfirmation'],list)
         self.assertNotIn('last_name',response.data)
+
+    def testResgisterUserBadFname(self):
+        userdata={
+            "username":"username2",
+            "first_name":"first name@1",
+            "last_name":"last name",
+            "email":"test@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team"
+        }
+        response=self.client.post(self.urlregister,userdata,format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+    def testResgisterUserBadLname(self):
+        userdata={
+            "username":"username2",
+            "first_name":"first name",
+            "last_name":"last name@#",
+            "email":"test@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team"
+        }
+        response=self.client.post(self.urlregister,userdata,format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+    def testResgisterUserBirthdate(self):
+        userdata={
+            "username":"username2",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team",
+            "birthdate":"2222-10-10"
+        }
+        response=self.client.post(self.urlregister,userdata,format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+    
+    def testResgisterUserNoPassowrd(self):
+        userdata={
+            "username":"username2",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test@mail.com",
+            "password":"",
+            "passwordconfirmation":"hgu",
+            "team":"test team",
+  
+        }
+        response=self.client.post(self.urlregister,userdata,format='json')   
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+    
+    def testResgisterUserNoMatchesPassowrd(self):
+        userdata={
+            "username":"username2",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test@mail.com",
+            "password":"aseasd",
+            "passwordconfirmation":"faseq",
+            "team":"test team",
+        }
+        response=self.client.post(self.urlregister,userdata,format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+
+
 
     def test_IsAdminGiven(self):
         self.userdata['is_admin']='True'

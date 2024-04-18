@@ -39,8 +39,8 @@ class UserModelSerializer(ModelSerializer):
             raise serializers.ValidationError({'last_name':['Name have special caracters, thats not allowed']})
         return value
     
-    def validate_birthday(self,value):
-        if value> date.today:
+    def validate_birthdate(self,value):
+        if value> date.today():
             raise serializers.ValidationError(['the birthday you provided is not allowed'])
 
     def validate(self,data):

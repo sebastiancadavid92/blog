@@ -1,11 +1,11 @@
 from rest_framework.routers import DefaultRouter
 
-from apps.posts.views import PostCreateAPIView, PostGetDeleteUpdateAPIView
+from apps.posts.views import PostCreateListAPIView, PostGetDeleteUpdateAPIView
 
 from django.urls import path
 
 urlpatterns = [
-    path('',PostCreateAPIView.as_view(),name='postcreation'),
+    path('',PostCreateListAPIView.as_view(),name='postcreationlist'),
     path('<pk>/',PostGetDeleteUpdateAPIView.as_view(),name='getdeletepost')
 ]
 

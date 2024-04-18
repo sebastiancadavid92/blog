@@ -1,4 +1,9 @@
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import APIException
+
+class CustomForbidden(APIException):
+    status_code = 404
+
 
 class PostPermissionRead(BasePermission):
 
@@ -9,21 +14,21 @@ class PostPermissionRead(BasePermission):
         permissiondict={i.category.categoryname:i.permission.permissionname for i in postpermissioncategory}
         if user.is_anonymous:
             if  permissiondict.get('PUBLIC')=='NONE':
-                    return False
+                    raise CustomForbidden
             elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'or permissiondict.get('PUBLIC')=='READ_ONLY' ):
                     return True
-            return False
-
+        if user.is_admin:
+            return True
         if user==obj.author and permissiondict.get('AUTHOR')=='NONE':
-            return False
+            raise CustomForbidden
         elif user==obj.author and (permissiondict.get('AUTHOR')=='EDIT'or permissiondict.get('AUTHOR')=='READ_ONLY' ):
             return True
         if team==user.team and permissiondict.get('TEAM')=='NONE':
-            return False
+            raise CustomForbidden
         elif user.team==team and (permissiondict.get('TEAM')=='EDIT'or permissiondict.get('TEAM')=='READ_ONLY' ):
             return True
         if user.is_authenticated and permissiondict.get('AUTHENTICATED')=='NONE':
-            return False
+            raise CustomForbidden
         elif user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='EDIT'or permissiondict.get('AUTHENTICATED')=='READ_ONLY' ):
             return True
  
@@ -36,6 +41,12 @@ class PostPermissionEdit(BasePermission):
         permissiondict={i.category.categoryname:i.permission.permissionname for i in postpermissioncategory}
         team=obj.author.team
         user=request.user
+        if (not user.is_authenticated) and permissiondict.get('PUBLIC')=='NONE':
+            return False
+        elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'):
+            return True     
+        if user.is_admin:
+            return True
         if user==obj.author and permissiondict.get('AUTHOR')=='NONE':
             return False
         elif user==obj.author and (permissiondict.get('AUTHOR')=='EDIT'):
@@ -48,9 +59,7 @@ class PostPermissionEdit(BasePermission):
             return False
         elif user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='EDIT'):
             return True
-        if (not user.is_authenticated) and permissiondict.get('PUBLIC')=='NONE':
-            return False
-        elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'):
-            return True
+
+class DenyAccess(BasePermission):
+    def has_permission(self, request, view):
         return False
-    

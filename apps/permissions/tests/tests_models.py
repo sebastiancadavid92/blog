@@ -3,6 +3,7 @@ from ..factories import *
 from ..models import *
 from apps.posts.factories import PostFactory
 from django.db import IntegrityError
+import re
 class test_PermissionCategoryPost(TestCase):
      
     @classmethod
@@ -59,9 +60,9 @@ class test_PermissionCategoryPost(TestCase):
             PermissionCategoryPostFactory(post=post, category=self.categories[0], permission=self.permissions[1])
 
     def testShowpermissioncategorypost(self):
-        postsauthornone = Post.objects.filter(permissioncategorypost__category__categoryname='AUTHOR',permissioncategorypost__permission__permissionname='NONE')
-        postreamread=Post.objects.filter(permissioncategorypost__category__categoryname='TEAM',
-                                            permissioncategorypost__permission__permissionname='READ_ONLY')
+        postsauthornone = Post.objects.filter(postinverse__category__categoryname='AUTHOR',postinverse__permission__permissionname='NONE')
+        postreamread=Post.objects.filter(postinverse__category__categoryname='TEAM',
+                                            postinverse__permission__permissionname='READ_ONLY')
         self.assertEqual((postreamread.union(postsauthornone)).count(),3*3) 
     
     def testDeletePermissionCategorybyDeletingaPost(self):
@@ -70,5 +71,22 @@ class test_PermissionCategoryPost(TestCase):
         self.assertEqual(PermissionCategoryPost.objects.all().count(),17*4)
         self.assertEqual(Permission.objects.all().count(),3)
         self.assertEqual(Category.objects.all().count(),4)
+
+    def testStrPermissionMethod(self):
+        permission=PermissionFactory(permissionname='EDIT')  
+        self.assertEquals(permission.__str__(),'EDIT')
+
+    def testStrCategoryMethod(self):
+        cate=CategoryFactory(categoryname='PUBLIC')      
+        
+        self.assertEquals(cate.__str__(),'PUBLIC')
+
+    def testStrPosPermissionCategorytMethod(self):
+        post=PostFactory(title='title post') 
+        cate=CategoryFactory(categoryname='PUBLIC')
+        permission=PermissionFactory(permissionname='EDIT')         
+        cpp=PermissionCategoryPostFactory(category=cate,post=post,permission=permission)
+        pattern = r'^\d+->PUBLIC=EDIT$'
+        self.assertIsNotNone(re.match(pattern,cpp.__str__()))
     
 # Create your tests here.

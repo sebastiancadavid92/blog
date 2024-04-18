@@ -1,18 +1,89 @@
-from apps.posts.serializer import CreationPostModelSerializer,PermissionModelSerializer,CategoryModelSerializer,PermissionCategoryPostModelSerializer
-from rest_framework.generics import CreateAPIView,GenericAPIView
+
+from rest_framework.generics import GenericAPIView,ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
-from rest_framework import status,decorators
-
-from .models import Post
-from .permissionclass import PostPermissionRead, PostPermissionEdit
+from rest_framework import status
 from rest_framework.mixins import RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
+from django.db.models import Q
+
+from apps.posts.serializer import CreationPostModelSerializer
+from .models import Post
+from .permissionclass import PostPermissionRead, PostPermissionEdit, DenyAccess
+from .pagiantionclasses import Pagination
 # Create your views here.
 
-class PostCreateListAPIView(CreateAPIView):
+class PostCreateListAPIView(ListCreateAPIView):
 
     serializer_class=CreationPostModelSerializer
-    permission_classes=[IsAuthenticated]
+    pagination_class=Pagination
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        elif self.request.method == 'GET':
+            return [AllowAny()]
+        return [DenyAccess()] 
+
+    def get_queryset1(self):
+        user=self.request.user
+        query_part_1 = Q(author=user, postinverse__category__categoryname='AUTHOR',postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
+        query_part_2 = Q(author__team=user.team, postinverse__category__categoryname='TEAM', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY']) & ~Q(author=user)
+        query_part_3 = ~Q(author__team=user.team)&Q(postinverse__category__categoryname='AUTHENTICATED', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
+        query = query_part_1 | query_part_2 | query_part_3
+        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
+        import pdb;pdb.set_trace()
+        return queryset
+    
+    def get_queryset2(self):
+        query= Q(postinverse__category__categoryname='PUBLIC',postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
+        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
+        return queryset
+
+
+    def list(self, request, *args, **kwargs):
+        #import pdb;pdb.set_trace()
+
+        if not self.request.user.is_authenticated:
+           query=self.get_queryset2()
+           if len(query)==0:
+                return Response({},status=status.HTTP_200_OK)
+           
+           page = self.paginate_queryset(query)
+
+           if page is not None:
+              serializer = self.get_serializer(page, many=True)
+              return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
+           
+           serializer = self.get_serializer(query, many=True)
+           return Response(serializer.data, status=status.HTTP_200_OK)  # Devuelve la respuesta sin paginación
+            
+        elif self.request.user.is_admin:
+            query=Post.objects.all()
+            if len(query)==0:
+                return Response({},status=status.HTTP_200_OK)
+            #####
+            page = self.paginate_queryset(query)
+            if page is not None:
+              serializer = self.get_serializer(page, many=True)
+              return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
+           
+            serializer = self.get_serializer(query, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK) 
+        
+        else:
+            query=self.get_queryset1()
+            if len(query)==0:
+                return Response({},status=status.HTTP_200_OK)
+            page = self.paginate_queryset(query)
+            if page is not None:
+              serializer = self.get_serializer(page, many=True)
+              return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
+           
+            serializer = self.get_serializer(query, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK) 
+
+
+
 
     def post(self,request):
         author=request.user
@@ -35,11 +106,10 @@ class PostGetDeleteUpdateAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateMode
             return [PostPermissionRead()]
         elif self.request.method == 'PUT' or self.request.method == 'PATCH' or self.request.method == 'DELETE':
             return [PostPermissionEdit()]
-        return False
+        return [DenyAccess()]
 
      
     def patch(self, request, *args, **kwargs):
-        import pdb;pdb.set_trace()
         return super().update(request, *args, **kwargs)
     
  

@@ -127,5 +127,18 @@ class test_PostModel(TestCase):
 
     def testExceptp(self):
         self.assertEqual(self.post.exceptp,self.post.content[:200])
+    
+    def testStrLike(self):
+        li=Like.objects.filter(user=self.usersteam2[0], post=self.postuser1team1[0]).first()
+        self.assertEqual(li.__str__(),(self.usersteam2[0].username +" Likes "+ self.postuser1team1[0].title))
+    
+    def testStrPost(self):
+        self.assertEqual(self.post.__str__(),self.post.title)
+        
+    def testStrComment(self):
+        co=Comment.objects.filter(user=self.usersteam1[0],post=self.postuser1team1[0]).first()
+        self.assertEqual(co.__str__(),(self.usersteam1[0].username +" Comented On "+ self.postuser1team1[0].title))
+   
+        ##self.assertEqual(self.post.__str__(),self.post.title)
         
 

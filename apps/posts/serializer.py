@@ -106,21 +106,20 @@ class CreationPostModelSerializer(ModelSerializer):
             return rep
                 
     
-
-    def save(self, **kwargs): 
-        blog=super().save(**kwargs)
-        return blog
     
-
-    def update(self, instance, validated_data):
-        import pdb;pdb.set_trace()
+    @transaction.atomic
+    def update(self, instance, validated_data):        
+        instance.title=validated_data.get('title')
+        instance.content=validated_data.get('content')
         cate=self.context['categoryserializer'].save()
         perm=self.context['permissionserializer'].save()
         instance.postinverse.all().delete()
         for i in range(0,len(cate)):
-            instancepcp=PermissionCategoryPost.objects.create(post=instance,category=cate[i][0],permission=perm[i][0])
-        import pdb;pdb.set_trace()
-        return super().update(instance, validated_data)
+            PermissionCategoryPost.objects.create(post=instance,category=cate[i][0],permission=perm[i][0])
+        instance.save()
+        return instance
+
+
 
 
 

@@ -1,12 +1,13 @@
-from apps.posts.models import Post
+from apps.posts.models import Post,Comment,Like
 from apps.users.models import User
 from apps.permissions.models import PermissionCategoryPost
 from apps.permissions.models import *
-from django.contrib.sessions.models import Session
 from rest_framework import status
 from  rest_framework.test import APITestCase
+
 from django.urls import reverse
 import random
+
 
 class PostCreationViewTest(APITestCase):
     def setUp(self):
@@ -485,7 +486,7 @@ class PostListViewTest(APITestCase):
 
         self.permission=['EDIT','READ_ONLY','NONE']
 
-        for i in range(100):
+        for i in range(10):
             datapost={ "title":"title"+str(i),
                     "content":"content",
                     "permission":{
@@ -586,9 +587,129 @@ class PostListViewTest(APITestCase):
         self.assertEqual(response.data,{})
         self.assertIsNone(response.data.get('count'))
         
+  
+class CommentCreationViewTest(APITestCase):
+ 
+    def setUp(self):
+        
 
-        
-        
+        self.urlregister=reverse('register')                                    
+        self.urllongin=reverse('login')
+        self.urllogout=reverse('logout')
+        self.urlcreatepost=reverse('postcreationlist')
+        self.permission=['EDIT','READ_ONLY','NONE']
+    
+
+
+        for i in range(2):
+            data={ 
+            "username":"username"+str(i),
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test"+str(i)+"@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team1" ,   
+        }
+            self.client.post(self.urlregister,data=data,format='json')
+
+
+        data={ 
+            "username":"username3",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test3@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team2" ,   
+        }
+        self.client.post(self.urlregister,data=data,format='json')
+
+        data={ 
+            "username":"username4",
+            "first_name":"first name",
+            "last_name":"last name",
+            "email":"test4@mail.com",
+            "password":"123",
+            "passwordconfirmation":"123",
+            "team":"test team2" ,
+            "is_admin":"True"   
+        }
+        self.client.post(self.urlregister,data=data,format='json')
+
+        for i in range(4):
+            data={
+                "username":"test"+str(i)+"@mail.com",
+                "password":"123"
+            }
+            self.client.post(self.urllongin,data=data,format='json')
+
+            for j in range(3):
+                datapost={ "title":"title"+str(j)+"autho"+str(i),
+                    "content":"content",
+                    "permission":{
+                        "PUBLIC":self.permission[1],
+                        "AUTHOR":self.permission[1],
+                        "TEAM":self.permission[1],
+                        "AUTHENTICATED":self.permission[1]
+                        }
+                    }
+                self.client.post(self.urlcreatepost,datapost,format='json')
+            self.client.get(self.urllogout,data=data,format='json')
+
+            
+    def testPostCreation(self):
+        data={
+                "username":"test1@mail.com",
+                "password":"123"
+            }
+        self.client.post(self.urllongin,data=data,format='json')        
+        post_id=Post.objects.first().id
+        url=f'/post/{post_id}/comment/'
+        response=self.client.post(url,data={"content":"contenido del post"},format='json')
+        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
+        cont=Comment.objects.all().count()
+        self.assertEqual(cont,1)
+  
+    def testPostCreationBadData(self):
+        data={
+                "username":"test1@mail.com",
+                "password":"123"
+            }
+        self.client.post(self.urllongin,data=data,format='json')        
+        post_id=Post.objects.first().id
+        url=f'/post/{post_id}/comment/'
+        response=self.client.post(url,data={"":"contenido del post"},format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+    def testPostCreationBadData2(self):
+        data={
+                "username":"test1@mail.com",
+                "password":"123"
+            }
+        self.client.post(self.urllongin,data=data,format='json')        
+        post_id=Post.objects.first().id
+        url=f'/post/{post_id}/comment/'
+        response=self.client.post(url,data={"content":""},format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+    def testPostCreationEmtpydata(self):
+        data={
+                "username":"test1@mail.com",
+                "password":"123"
+            }
+        self.client.post(self.urllongin,data=data,format='json')        
+        post_id=Post.objects.first().id
+        url=f'/post/{post_id}/comment/'
+        response=self.client.post(url,data={"":""},format='json')
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
 
                     
              

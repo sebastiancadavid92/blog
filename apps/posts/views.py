@@ -1,18 +1,21 @@
 
-from rest_framework.generics import GenericAPIView,ListCreateAPIView
+from rest_framework.generics import GenericAPIView,ListCreateAPIView,ListAPIView
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.mixins import RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
-from django.db.models import Q
 
-from apps.posts.serializer import CreationPostModelSerializer,LikeModelSerializer
+
+
+from apps.posts.serializer import CreationPostModelSerializer,LikeModelSerializer,CommentModelSerializer
 from .models import Post,Like,Comment
 from .permissionclass import PostPermissionRead, PostPermissionEdit
-from .pagiantionclasses import Pagination
+from .pagiantionclasses import Pagination,PaginationLike
+from .mixins import QuerysetMixin
+from .filter import LikeFilter,CommentFilter
 # Create your views here.
 
-class PostCreateListAPIView(ListCreateAPIView):
+class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
 
     serializer_class=CreationPostModelSerializer
     pagination_class=Pagination
@@ -22,59 +25,18 @@ class PostCreateListAPIView(ListCreateAPIView):
             return [IsAuthenticated()]
         elif self.request.method == 'GET':
             return [AllowAny()]
-       
-
-    def get_queryset1(self):
-        user=self.request.user
-        query_part_1 = Q(author=user, postinverse__category__categoryname='AUTHOR',postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
-        query_part_2 = Q(author__team=user.team, postinverse__category__categoryname='TEAM', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY']) & ~Q(author=user)
-        query_part_3 = ~Q(author__team=user.team)&Q(postinverse__category__categoryname='AUTHENTICATED', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
-        query = query_part_1 | query_part_2 | query_part_3
-        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
-        return queryset
-    
-    def get_queryset2(self):
-        query= Q(postinverse__category__categoryname='PUBLIC',postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
-        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
-        return queryset
-
 
     def list(self, request, *args, **kwargs):
         #import pdb;pdb.set_trace()
-
-        if not self.request.user.is_authenticated:
-           query=self.get_queryset2()
+           query=self.get_queryset()
            if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
            
            page = self.paginate_queryset(query.order_by('id'))
-
            if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
            # Devuelve la respuesta sin paginación
-            
-        elif self.request.user.is_admin:
-            query=Post.objects.all()
-            if len(query)==0:
-                return Response({},status=status.HTTP_200_OK)
-            #####
-            page = self.paginate_queryset(query.order_by('id'))
-            if page is not None:
-              serializer = self.get_serializer(page, many=True)
-              return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
-           
-        
-        else:
-            query=self.get_queryset1()
-            if len(query)==0:
-                return Response({},status=status.HTTP_200_OK)
-            page = self.paginate_queryset(query.order_by('id'))
-            if page is not None:
-              serializer = self.get_serializer(page, many=True)
-              return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
-
-
 
 
     def post(self,request):
@@ -129,5 +91,62 @@ class LikeAPIView(GenericAPIView):
             like=Like.objects.filter(post=post,user=request.user)
             like.delete()
             return Response({"messange":"sucessful like delete"},status.HTTP_204_NO_CONTENT)
-        return Response({'error':'no like found'},status.HTTP_400_BAD_REQUEST)
+        return Response({'error':'no like found'},status.HTTP_404_NOT_FOUND)
+    
+
+class CommentAPIView(GenericAPIView):
+    queryset=Post.objects.all()
+    permission_classes=[PostPermissionRead,IsAuthenticated]
+    lookup_url_kwarg = 'pk'
+    
+
+    def post(self, request, pk):      
+        post=self.get_object()
+        serializer=CommentModelSerializer(data=request.data,context={"user":request.user,"post":post})
+        if not serializer.is_valid():
+            return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data,status.HTTP_201_CREATED)
+    
+    def delete(self,request,pk,pkc=None):
         
+        post=self.get_object()
+        comment=Comment.objects.prefetch_related('user').filter(id=pkc).first()
+        if comment and comment.user==request.user:
+            comment.delete()
+            return Response({"messange":"sucessful comment delete"},status.HTTP_204_NO_CONTENT)
+        if not comment:
+            return Response({'error':'comment not found'},status.HTTP_404_NOT_FOUND)
+        if comment.user!=request.user:
+            return Response({'error':'not allowed to delete this cooment'},status.HTTP_403_FORBIDDEN)
+
+
+class ListLikeAPIView(QuerysetMixin,ListAPIView):
+    serializer_calls=LikeModelSerializer
+    pagination_class=PaginationLike
+
+    def get_queryset(self):
+        query=Like.objects.filter(post__in=super().get_queryset()).prefetch_related('post','user')
+        return LikeFilter(self.request.GET, query).qs
+
+    def list(self, request, *args, **kwargs):
+        queryset=self.get_queryset()
+        page = self.paginate_queryset(queryset.order_by('id'))
+        serializer=LikeModelSerializer(page,many=True)
+        return Response(self.get_paginated_response(serializer.data),status.HTTP_200_OK)
+        
+
+class ListCommentsAPIView(QuerysetMixin,ListAPIView):
+    serializer_class=CommentModelSerializer
+    pagination_class=Pagination
+
+
+    def get_queryset(self):
+        query=Comment.objects.filter(post__in=super().get_queryset()).prefetch_related('post','user')
+        return CommentFilter(self.request.GET, query).qs
+    
+    def list(self, request, *args, **kwargs):
+        queryset=self.get_queryset()
+        page = self.paginate_queryset(queryset.order_by('id'))
+        serializer=self.get_serializer(page,many=True)
+        return Response(self.get_paginated_response(serializer.data),status.HTTP_200_OK)

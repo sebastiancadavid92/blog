@@ -43,12 +43,13 @@ BASE_APPS=[
 LOCAL_APPS=[
     'apps.users',
     'apps.posts',
-    'apps.permissions'
+    'apps.permissions',
     
 ]
 
 THIRD_APPS=[
     'rest_framework',
+    'django_filters',
     
 
 

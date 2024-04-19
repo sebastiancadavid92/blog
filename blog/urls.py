@@ -21,6 +21,8 @@ from apps.users.views import LoginView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/',include('apps.users.urls')),
-    path('post/', include('apps.posts.urls')),
+    path('post/', include('apps.posts.urls.urlspost')),
+    path('likes/',include('apps.posts.urls.urlslike')),
+    path('comments/',include('apps.posts.urls.urlscomment')),
     path('',LoginView)
 ]

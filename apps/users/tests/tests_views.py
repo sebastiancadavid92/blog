@@ -206,4 +206,3 @@ class RegistrationAPITestCase(APITestCase):
         self.assertEqual(response3.status_code,status.HTTP_403_FORBIDDEN)
 
 
-

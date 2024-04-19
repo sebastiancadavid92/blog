@@ -154,3 +154,39 @@ class LikeModelSerializer(ModelSerializer):
             }
         return rep
     
+class CommentModelSerializer(ModelSerializer):
+    class Meta:
+        model=Comment
+        fields = '__all__'
+    
+
+    def validate(self,validated_data):
+        if not 'content' in validated_data:
+            raise serializers.ValidationError({"error content":"content has to be prived"})
+        if not validated_data.get('content'):
+            raise serializers.ValidationError({"error content":"content cant be null"})
+        return validated_data 
+    
+    def to_internal_value(self, data):
+        data['user']=self.context.get('user')
+        data['post']=self.context.get('post')
+        return data
+
+    def create(self, validated_data):
+        #import pdb;pdb.set_trace()
+        comment=Comment.objects.create(**validated_data)
+        
+        return comment
+
+    def to_representation(self,instance):
+        rep={   
+                'id':instance.id,
+                'username':instance.user.username,
+                'post':instance.post.title,
+                'content':instance.content,
+                'timestamp':instance.timestamp.strftime('%Y-%m-%d %H:%M')
+                
+                
+            }
+        return rep
+    

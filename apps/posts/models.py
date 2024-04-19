@@ -27,7 +27,7 @@ class Post(models.Model):
 class Like (models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)
     post= models.ForeignKey(Post, on_delete=models.CASCADE)
-    timestamp= models.DateField(_('creation date'),auto_now_add=True)
+    timestamp= models.DateTimeField(_('creation date'),auto_now_add=True)
 
     class Meta:
         constraints=[

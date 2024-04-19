@@ -3,6 +3,8 @@ from rest_framework.exceptions import APIException
 
 class CustomForbidden(APIException):
     status_code = 404
+    default_detail="Not Found"
+    
 
 
 class PostPermissionRead(BasePermission):

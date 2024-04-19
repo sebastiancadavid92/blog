@@ -8,30 +8,29 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from .serializer import  UserModelSerializer
 from django.contrib.sessions.models import Session
-from rest_framework.permissions import AllowAny
-from apps.posts.models import Post
+
 
 @api_view(['POST'])
+
 def LoginView(request):
-        if Session.objects.filter(session_key=request.session.session_key).first():
-             return Response({'error':'user already logged in'},status=status.HTTP_400_BAD_REQUEST)
+    if Session.objects.filter(session_key=request.session.session_key).first():
+            return Response({'error':'user already logged in'},status=status.HTTP_400_BAD_REQUEST)
+
+    username = request.data.get('username')
+    password = request.data.get('password')
+    if not username or not password:
+            return Response({'error':'you must provide both, a valid username and a valid password'},status=status.HTTP_404_NOT_FOUND)
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return Response({'message':'Sucessful login'},status=status.HTTP_200_OK)
+    else:
+        return Response({'error':'invalid credentials'},status=status.HTTP_404_NOT_FOUND)
     
-        username = request.data.get('username')
-        password = request.data.get('password')
-        if not username or not password:
-             return Response({'error':'you must provide both, a valid username and a valid password'},status=status.HTTP_404_NOT_FOUND)
-        user = authenticate(request,username=username, password=password)
-        if user is not None:
-            login(request, user)
-            return Response({'message':'Sucessful login'},status=status.HTTP_200_OK)
-        else:
-            return Response({'error':'invalid credentials'},status=status.HTTP_404_NOT_FOUND)
-        
 
 
 
 @api_view(['GET'])
-#@permission_classes(IsAuthenticated)
 def LogoutView(request):
     if request.user.is_authenticated:
         logout(request)

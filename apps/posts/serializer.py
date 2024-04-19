@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from apps.posts.models import Post
+from apps.posts.models import Post,Like,Comment
 from apps.permissions.models import Category,Permission, PermissionCategoryPost
 from apps.permissions.models import CATEGORY_NAME_CHOICES,PERMISSION_NAME_CHOICES
 from django.db import transaction
@@ -119,27 +119,15 @@ class CreationPostModelSerializer(ModelSerializer):
         instance.save()
         return instance
 
-
-
-
-
-
 class CategoryModelSerializer(ModelSerializer):
 
     class Meta:
         model=Category
         fields = ['categoryname']
     
-
-    """ def validate_categoryname(self, value):
-        if  not any(value==choice[0] for choice in CATEGORY_NAME_CHOICES):
-            raise serializers.ValidationError({'error':f"the category {value} is not allowed "})
-        return value """
-    
     def create(self,validated_data):
         category=Category.objects.get_or_create(**validated_data)
         return category
-
 
 class PermissionModelSerializer(ModelSerializer):
     class Meta:
@@ -149,9 +137,20 @@ class PermissionModelSerializer(ModelSerializer):
     def create(self,validated_data):
         permission=Permission.objects.get_or_create(**validated_data)
         return permission
-    
-"""     def validate_permissionname(self, value):
-        if not any(value==choice[0] for choice in PERMISSION_NAME_CHOICES):
-            raise serializers.ValidationError({'error':f"the permission {value} is not allowed "})
-        return value """
+
+
+class LikeModelSerializer(ModelSerializer):
+    class Meta:
+        model=Like
+        fields = '__all__'
+        
+    def to_representation(self,instance):
+        rep={
+                'username':instance.user.username,
+                'post':instance.post.title,
+                'timestamp':instance.timestamp.strftime('%Y-%m-%d %H:%M')
+                
+                
+            }
+        return rep
     

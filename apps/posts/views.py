@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.mixins import RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin
 from django.db.models import Q
 
-from apps.posts.serializer import CreationPostModelSerializer
-from .models import Post
+from apps.posts.serializer import CreationPostModelSerializer,LikeModelSerializer
+from .models import Post,Like,Comment
 from .permissionclass import PostPermissionRead, PostPermissionEdit
 from .pagiantionclasses import Pagination
 # Create your views here.
@@ -88,7 +88,6 @@ class PostCreateListAPIView(ListCreateAPIView):
         return Response(serializerblog.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class PostGetDeleteUpdateAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateModelMixin,GenericAPIView): 
     serializer_class=CreationPostModelSerializer
     queryset=Post.objects.all()
@@ -111,5 +110,24 @@ class PostGetDeleteUpdateAPIView(RetrieveModelMixin,DestroyModelMixin,UpdateMode
  
     def delete(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
+
+class LikeAPIView(GenericAPIView):
+    queryset=Post.objects.all()
+    permission_classes=[PostPermissionRead,IsAuthenticated]
     
-	
+    def post(self, request, pk):      
+        post=self.get_object()
+        if post.like_exists(request.user.id):
+            return Response({'error':'This user already liked this post'},status.HTTP_400_BAD_REQUEST)
+        like=Like.objects.create(user=request.user, post=post)
+        serializer=LikeModelSerializer(like)
+        return Response(serializer.data,status.HTTP_201_CREATED)
+    
+    def delete(self,request,pk):
+        post=post=self.get_object()
+        if post.like_exists(request.user.id):
+            like=Like.objects.filter(post=post,user=request.user)
+            like.delete()
+            return Response({"messange":"sucessful like delete"},status.HTTP_204_NO_CONTENT)
+        return Response({'error':'no like found'},status.HTTP_400_BAD_REQUEST)
+        

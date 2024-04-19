@@ -146,6 +146,10 @@ REST_FRAMEWORK = {
      ##       ],
     # Otros ajustes de DRF
 }
+
+TIME_ZONE = 'America/Bogota'
+USE_TZ = True
+
 """A
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",

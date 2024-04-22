@@ -80,12 +80,12 @@ class LikeAPIView(GenericAPIView):
     def post(self, request, pk):      
         post=self.get_object()
         if post.like_exists(request.user.id):
-            return Response({'error':'This user already liked this post'},status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'This user already liked this post'},status.HTTP_403_FORBIDDEN)
         like=Like.objects.create(user=request.user, post=post)
         serializer=LikeModelSerializer(like)
         return Response(serializer.data,status.HTTP_201_CREATED)
     
-    def delete(self,request,pk):
+    def delete(self,request,pk,pkc=None):
         post=post=self.get_object()
         if post.like_exists(request.user.id):
             like=Like.objects.filter(post=post,user=request.user)

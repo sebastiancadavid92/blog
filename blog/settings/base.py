@@ -50,7 +50,7 @@ LOCAL_APPS=[
 THIRD_APPS=[
     'rest_framework',
     'django_filters',
-    'drf_yasg',
+
     
 
 ]

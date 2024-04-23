@@ -405,9 +405,10 @@ class CommentListPaginationViewTest(APITestCase):
                 "password":"123",
         }
         self.client.post(self.urllongin,datalogin,format='json')
-        url=self.urllistcomment+"?user="+str(User.objects.all()[5].id)##+"&user="+str(7)
+        user=User.objects.filter(username='username5').first()
+        url=self.urllistcomment+"?user="+str(user.id)##+"&user="+str(7)
         response=self.client.get(url,format='json')
-        self.assertEqual(response.data['count'],0)
+        self.assertEqual(response.data['count'],1)
         url=self.urllistcomment+"?user="+str(2222) # unexisting user
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)
@@ -417,15 +418,18 @@ class CommentListPaginationViewTest(APITestCase):
                 "password":"123",
         }
         self.client.post(self.urllongin,datalogin,format='json')
-        url=self.urllistcomment+"?user="+str(User.objects.all()[5].id)+"&post="+str(self.post.id)
+        user=User.objects.filter(username='username5').first()
+        url=self.urllistcomment+"?user="+str(user.id)+"&post="+str(self.post.id)
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],1)
-        url=self.urllistcomment+"?user="+str(User.objects.all()[1].id)+"&post="+str(self.post.id) # existing user didnt comment the post
+        user=User.objects.filter(username='username1').first()
+        url=self.urllistcomment+"?user="+str(user.id)+"&post="+str(self.post.id) # existing user didnt comment the post
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)
         url=self.urllistcomment+"?user="+str(22222)+"&post="+str(self.post.id) # unexisting with existing post
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)
-        url=self.urllistcomment+"?user="+str(User.objects.all()[5].id)+"&post="+str(100) # unexisting post with existing user who has a comment in a different post
+        user=User.objects.filter(username='username5').first()
+        url=self.urllistcomment+"?user="+str(user.id)+"&post="+str(100) # unexisting post with existing user who has a comment in a different post
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)

@@ -333,29 +333,32 @@ class LikeListPaginationViewTest(APITestCase):
         }
         
         self.client.post(self.urllongin,datalogin,format='json')
-        user=User.objects.all()[5]
+        user=User.objects.filter(username='username5').first()
         url=self.urllistlike+"?user="+str(user.id)##+"&user="+str(7)
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],1)
         url=self.urllistlike+"?user="+str(2222) # unexisting user
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)
+
     def testLikeFilterbyUserandPost(self):
         datalogin={
                 "username":"test1@mail.com",
                 "password":"123",
         }
         self.client.post(self.urllongin,datalogin,format='json')
-        user5=User.objects.all()[5]
-        url=self.urllistlike+"?user="+str(user5.id)+"&post="+str(self.post.id)
+        user=User.objects.filter(username='username5').first()
+        url=self.urllistlike+"?user="+str(user.id)+"&post="+str(self.post.id)
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],1)
-        url=self.urllistlike+"?user="+str(User.objects.all()[0].id)+"&post="+str(self.post.id) # existing user didnt comment the post
+        user=User.objects.filter(username='username1').first()
+        url=self.urllistlike+"?user="+str(user.id)+"&post="+str(self.post.id) # existing user didnt comment the post
         response=self.client.get(url,format='json')
-        self.assertEqual(response.data['count'],1)
+        self.assertEqual(response.data['count'],0)
         url=self.urllistlike+"?user="+str(22222)+"&post="+str(self.post.id) # unexisting with existing post
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)
+        user=User.objects.filter(username='username5').first()
         url=self.urllistlike+"?user="+str(user.id)+"&post="+str(100) # unexisting post with existing user who has a like in a different post
         response=self.client.get(url,format='json')
         self.assertEqual(response.data['count'],0)

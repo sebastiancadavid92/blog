@@ -13,6 +13,7 @@ from django.contrib.sessions.models import Session
 @api_view(['POST'])
 
 def LoginView(request):
+
     if Session.objects.filter(session_key=request.session.session_key).first():
             return Response({'error':'user already logged in'},status=status.HTTP_400_BAD_REQUEST)
 

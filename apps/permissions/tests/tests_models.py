@@ -74,12 +74,12 @@ class test_PermissionCategoryPost(TestCase):
 
     def testStrPermissionMethod(self):
         permission=PermissionFactory(permissionname='EDIT')  
-        self.assertEquals(permission.__str__(),'EDIT')
+        self.assertEqual(permission.__str__(),'EDIT')
 
     def testStrCategoryMethod(self):
         cate=CategoryFactory(categoryname='PUBLIC')      
         
-        self.assertEquals(cate.__str__(),'PUBLIC')
+        self.assertEqual(cate.__str__(),'PUBLIC')
 
     def testStrPosPermissionCategorytMethod(self):
         post=PostFactory(title='title post') 

@@ -24,6 +24,8 @@ class UserModelSerializer(ModelSerializer):
    
     
     def namesvalidation(self,name):
+       if not name:
+           return True
        p = r'^[a-zA-Z0-9áéíóúÁÉÍÓÚüÜ\s]+$'
        if not re.match(p,name):
             return False
@@ -35,13 +37,17 @@ class UserModelSerializer(ModelSerializer):
         return value
     
     def validate_last_name(self,value):
+
         if not self.namesvalidation(value):
             raise serializers.ValidationError({'last_name':['Name have special caracters, thats not allowed']})
         return value
     
     def validate_birthdate(self,value):
+        if value is None:
+            return None
         if value> date.today():
             raise serializers.ValidationError(['the birthday you provided is not allowed'])
+        return value
 
     def validate(self,data):
         super().validate(data)

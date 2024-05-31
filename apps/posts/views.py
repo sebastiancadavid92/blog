@@ -19,6 +19,7 @@ class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
 
     serializer_class=CreationPostModelSerializer
     pagination_class=Pagination
+  
 
     def get_permissions(self):
         if self.request.method == 'POST':

@@ -28,12 +28,12 @@ class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
             return [AllowAny()]
 
     def list(self, request, *args, **kwargs):
-        #import pdb;pdb.set_trace()
+  
            query=self.get_queryset()
            if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
            
-           page = self.paginate_queryset(query.order_by('id'))
+           page = self.paginate_queryset(query)
            if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
@@ -41,11 +41,12 @@ class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
 
 
     def post(self,request):
+      
         author=request.user
         serializerblog=self.serializer_class(data=request.data, context={'author':author})
         if serializerblog.is_valid():
             blog=serializerblog.save()
-            data=self.serializer_class(blog)
+            data=self.serializer_class(blog,context={'request':request})
             if len(serializerblog.errors)==0:
                 return Response(data.data,status=status.HTTP_201_CREATED) 
         return Response(serializerblog.errors,status=status.HTTP_400_BAD_REQUEST)

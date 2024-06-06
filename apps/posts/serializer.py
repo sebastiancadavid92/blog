@@ -36,7 +36,7 @@ class CreationPostModelSerializer(ModelSerializer):
         if len(per)!= len(CATEGORY_NAME_CHOICES):
             raise serializers.ValidationError({'error':'some permissions are missed'})
         if any(i not in lista for i in per):
-            raise serializers.ValidationError({'Permission Error':'permissions name are not defined correctly'})
+            raise serializers.ValidationError({'error':'permissions name are not defined correctly'})
         seri=PermissionModelSerializer(data=value,many=True)
         if not seri.is_valid():
             raise serializers.ValidationError(seri.errors)
@@ -98,13 +98,42 @@ class CreationPostModelSerializer(ModelSerializer):
     def to_representation(self,instance):
             rep=dict()
             rep['id']=instance.id
-            rep['author']=instance.author.username
+            rep['author_name']=instance.author.username
+            rep['author_id']=instance.author.id
             rep['title']=instance.title
-            rep['content']=instance.content
+            rep['excerpt']=instance.exceptp
+            rep['team_name']=instance.author.team.team_name
+            rep['team_id']=instance.author.team.id
+            rep['timestamp']=(instance.timestamp)
+            rep['comments']=instance.comments.all().count()
+            rep['likes']=instance.likes.all().count()
             per=instance.postinverse.all()
-            rep['permission']={i.category.categoryname : i.permission.permissionname for i in per}
+            rep['permission']={i.category.categoryname : i.permission.permissionname for i in per} 
+            rep['edit']=self.__can_edit(self.context.get('request').user,instance,rep['permission'])
+            rep['liked']=instance.like_exists(self.context.get('request').user.id)
             return rep
+    
                 
+    def __can_edit(self,user,post:Post, permissiondict):
+        team=post.author.team
+        if (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='NONE' or permissiondict.get('PUBLIC')=='READ_ONLY'):
+            return False
+        elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'):
+            return True     
+        if user.is_admin:
+            return True
+        if user==post.author and (permissiondict.get('AUTHOR')=='NONE' or permissiondict.get('AUTHOR')=='READ_ONLY'):
+            return False
+        elif user==post.author and (permissiondict.get('AUTHOR')=='EDIT'):
+            return True
+        if team==user.team and (permissiondict.get('TEAM')=='NONE' or permissiondict.get('TEAM')=='READ_ONLY'):
+            return False
+        elif user.team==team and (permissiondict.get('TEAM')=='EDIT' ):
+            return True
+        if user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='NONE' or permissiondict.get('AUTHENTICATED')=='READ_ONLY'):
+            return False
+        elif user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='EDIT'):
+            return True
     
     
     @transaction.atomic
@@ -173,7 +202,7 @@ class CommentModelSerializer(ModelSerializer):
         return data
 
     def create(self, validated_data):
-        #import pdb;pdb.set_trace()
+   
         comment=Comment.objects.create(**validated_data)
         
         return comment

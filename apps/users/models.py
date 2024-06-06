@@ -26,7 +26,6 @@ class CustomUserManager(BaseUserManager):
         return user
     
     def create(self, **kwargs):
-        
         return self.create_user(**kwargs)
 
     def create_superuser(self, email, password=None, **extra_fields):

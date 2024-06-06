@@ -21,10 +21,10 @@ class QuerysetMixin(mixins.ListModelMixin):
         query_part_2 = Q(author__team=user.team, postinverse__category__categoryname='TEAM', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY']) & ~Q(author=user)
         query_part_3 = ~Q(author__team=user.team)&Q(postinverse__category__categoryname='AUTHENTICATED', postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
         query = query_part_1 | query_part_2 | query_part_3
-        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
-        return queryset
+        queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission','author')
+        return queryset.order_by('-timestamp')
     
     def get_queryset_for_public(self):
         query= Q(postinverse__category__categoryname='PUBLIC',postinverse__permission__permissionname__in=['EDIT', 'READ_ONLY'])
         queryset = Post.objects.filter(query).distinct().prefetch_related('postinverse__category','postinverse__permission')
-        return queryset
+        return queryset.order_by('-timestamp')

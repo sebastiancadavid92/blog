@@ -18,8 +18,10 @@ class UserModelSerializer(ModelSerializer):
     def to_representation(self, instance):
         data= super().to_representation(instance)
         data.pop('password')
+        data['id']=instance.id
         data['team']=instance.team.team_name
-        data['team was created']=self.validated_data['was_created']
+        data['team_id']=instance.team.id
+        #data['team was created']=self.validated_data['was_created']
         return data
    
     

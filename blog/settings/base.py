@@ -139,8 +139,9 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
 
-SESSION_COOKIE_SECURE = True  # Send the cookie only over HTTPS
+
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+
 
 
 AUTH_USER_MODEL = 'users.User'

@@ -19,12 +19,18 @@ DATABASES = {
     }
 }
 
-CORS_ALLOW_CREDENTIALS:True
+CORS_ALLOW_CREDENTIALS=True
 CORS_ALLOWED_ORIGINS = [
-"http://localhost:8000",
 "http://localhost:4200",
 
 ]
+
+CSRF_COOKIE_SAMESITE ='None'
+CSRF_COOKIE_SECURE = True
+
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True  # Necesario para SameSite=None, requiere HTTPS
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

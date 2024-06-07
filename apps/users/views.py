@@ -40,6 +40,7 @@ def LoginView(request):
 
 @api_view(['GET'])
 def LogoutView(request):
+    
     if request.user.is_authenticated:
         logout(request)
         return Response({'message':'Successfull logout'},status=status.HTTP_200_OK)

@@ -1,6 +1,8 @@
 from django.test import TestCase
 from apps.users.models import *
-from ..factories import  *
+from  factories import *
+
+
 from ..models import *
 from django.db import IntegrityError
 

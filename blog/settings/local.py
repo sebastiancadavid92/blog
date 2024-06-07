@@ -28,8 +28,8 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_COOKIE_SAMESITE ='None'
 CSRF_COOKIE_SECURE = True
 
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True  # Necesario para SameSite=None, requiere HTTPS
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Necesario para SameSite=None, requiere HTTPS
 
 
 # Static files (CSS, JavaScript, Images)

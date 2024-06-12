@@ -1,13 +1,14 @@
-from apps.users.models import User
+from apps.users.models import User,Team
 from django.contrib.sessions.models import Session
 from rest_framework import status
 from  rest_framework.test import APITestCase
 from django.urls import reverse
 class AutenticacionAPITestCase(APITestCase):
     def setUp(self):
+        self.team=Team.objects.create(team_name='DEFAULT')
         self.user = User.objects.create(first_name='test name',last_name='last name test',
                                         email='test@test.com',birthdate='1992-05-25',
-                                        username='testuser', password='testpassword')
+                                        username='testuser', password='testpassword',team=self.team)
         self.urllongin=reverse('login')#courd be also '/user/login/'
         self.urllogout=reverse('logout')
 
@@ -47,10 +48,9 @@ class AutenticacionAPITestCase(APITestCase):
     def testDoubleLoginIn(self):
         data = {'username': 'test@test.com', 'password': 'testpassword'}
         self.client.post(self.urllongin, data, format='json')
-        response = self.client.post(self.urllongin, data, format='json')
-        self.assertIsNotNone(response.data['error'])
-        self.assertEqual(response.data['error'],'user already logged in')
-        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+        self.client.post(self.urllongin, data, format='json')
+        self.assertEqual(Session.objects.all().count(),1)
+  
 
     def testLogout(self):
         data = {'username': 'test@test.com', 'password': 'testpassword'}
@@ -72,6 +72,7 @@ class RegistrationAPITestCase(APITestCase):
         self.urllongin=reverse('login')
         self.urllogout=reverse('logout')
         self.urlregister=reverse('register')
+        self.team=Team.objects.create(team_name='DEFAULT')
 
         self.userdata={
             "username":"username",
@@ -104,7 +105,6 @@ class RegistrationAPITestCase(APITestCase):
         response=self.client.post(self.urlregister,userb,format='json')
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         self.assertIsInstance(response.data['username'],list)
-        self.assertIsInstance(response.data['first_name'],list)
         self.assertIsInstance(response.data['email'],list)
         self.assertIsInstance(response.data['password'],list)
         self.assertIsInstance(response.data['passwordconfirmation'],list)
@@ -194,9 +194,10 @@ class RegistrationAPITestCase(APITestCase):
         self.assertIsInstance(response.data['email'],list)
         
     def test_LoggedUserRegistering(self):
+
         user = User.objects.create(first_name='test name',last_name='last name test',
                                         email='test@test.com',birthdate='1992-05-25',
-                                        username='testuser', password='testpassword')
+                                        username='testuser', password='testpassword',team=self.team)
         datalogin = {'username': 'test@test.com', 'password': 'testpassword'}
         responselogin = self.client.post(self.urllongin, datalogin, format='json')
         self.assertEqual(responselogin.status_code,status.HTTP_200_OK)

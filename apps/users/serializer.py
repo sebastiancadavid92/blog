@@ -16,6 +16,7 @@ class UserModelSerializer(ModelSerializer):
         fields=['first_name','last_name','email','username','birthdate','is_admin','passwordconfirmation','password','team']
         
     def to_representation(self, instance):
+       
         data= super().to_representation(instance)
         data.pop('password')
         data['id']=instance.id

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from apps.users.models import *
-from  factories import *
+from  apps.posts.factories import *
 
 
 from ..models import *

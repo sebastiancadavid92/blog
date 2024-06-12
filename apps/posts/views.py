@@ -28,6 +28,7 @@ class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
             return [AllowAny()]
 
     def list(self, request, *args, **kwargs):
+        
   
            query=self.get_queryset()
            if len(query)==0:

@@ -1,5 +1,5 @@
 from apps.posts.models import Post
-from apps.users.models import User
+from apps.users.models import User,Team
 from apps.permissions.models import PermissionCategoryPost
 from apps.permissions.models import *
 from rest_framework import status
@@ -11,9 +11,10 @@ import random
 
 class PostCreationViewTest(APITestCase):
     def setUp(self):
+        self.team=Team.objects.create(team_name='DEFAULT')
         self.user = User.objects.create(first_name='test name',last_name='last name test',
                                         email='test@test.com',birthdate='1992-05-25',
-                                        username='testuser', password='testpassword')
+                                        username='testuser', password='testpassword',team=self.team)
         self.urllongin=reverse('login')#courd be also '/user/login/'
         self.urllogout=reverse('logout')
         self.urlcreatepost=reverse('postcreationlist')

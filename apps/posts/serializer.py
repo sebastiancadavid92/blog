@@ -107,6 +107,7 @@ class CreationPostModelSerializer(ModelSerializer):
             rep['timestamp']=(instance.timestamp)
             rep['comments']=instance.comments.all().count()
             rep['likes']=instance.likes.all().count()
+            rep['content']=instance.content
             per=instance.postinverse.all()
             rep['permission']={i.category.categoryname : i.permission.permissionname for i in per} 
             rep['edit']=self.__can_edit(self.context.get('request').user,instance,rep['permission'])

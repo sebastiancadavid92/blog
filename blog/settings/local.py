@@ -25,6 +25,10 @@ CORS_ALLOWED_ORIGINS = [
 
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:4200',
+]
+
 CSRF_COOKIE_SAMESITE ='None'
 CSRF_COOKIE_SECURE = True
 

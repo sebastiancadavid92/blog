@@ -10,7 +10,7 @@ from rest_framework.mixins import RetrieveModelMixin,DestroyModelMixin,UpdateMod
 from apps.posts.serializer import CreationPostModelSerializer,LikeModelSerializer,CommentModelSerializer
 from .models import Post,Like,Comment
 from .permissionclass import PostPermissionRead, PostPermissionEdit
-from .pagiantionclasses import Pagination,PaginationLike
+from .pagiantionclasses import Pagination,PaginationLike,PaginationComments
 from .mixins import QuerysetMixin
 from .filter import LikeFilter,CommentFilter
 # Create your views here.
@@ -28,14 +28,12 @@ class PostCreateListAPIView(QuerysetMixin,ListCreateAPIView):
             return [AllowAny()]
 
     def list(self, request, *args, **kwargs):
-        
-  
-           query=self.get_queryset()
-           if len(query)==0:
+        query=self.get_queryset()
+        if len(query)==0:
                 return Response({},status=status.HTTP_200_OK)
            
-           page = self.paginate_queryset(query)
-           if page is not None:
+        page = self.paginate_queryset(query)
+        if page is not None:
               serializer = self.get_serializer(page, many=True)
               return Response( self.get_paginated_response(serializer.data),status=status.HTTP_200_OK)
            # Devuelve la respuesta sin paginación
@@ -125,7 +123,7 @@ class CommentAPIView(GenericAPIView):
 
 
 class ListLikeAPIView(QuerysetMixin,ListAPIView):
-    serializer_calls=LikeModelSerializer
+    serializer_class=LikeModelSerializer
     pagination_class=PaginationLike
 
     def get_queryset(self):
@@ -141,11 +139,11 @@ class ListLikeAPIView(QuerysetMixin,ListAPIView):
 
 class ListCommentsAPIView(QuerysetMixin,ListAPIView):
     serializer_class=CommentModelSerializer
-    pagination_class=Pagination
+    pagination_class=PaginationComments
 
 
     def get_queryset(self):
-        query=Comment.objects.filter(post__in=super().get_queryset()).prefetch_related('post','user')
+        query=Comment.objects.filter(post__in=super().get_queryset()).prefetch_related('post','user').order_by('-timestamp')
         return CommentFilter(self.request.GET, query).qs
     
     def list(self, request, *args, **kwargs):
@@ -153,3 +151,5 @@ class ListCommentsAPIView(QuerysetMixin,ListAPIView):
         page = self.paginate_queryset(queryset.order_by('id'))
         serializer=self.get_serializer(page,many=True)
         return Response(self.get_paginated_response(serializer.data),status.HTTP_200_OK)
+    
+    

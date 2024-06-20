@@ -21,3 +21,4 @@ def check_username(request,username):
         return Response({'usernametook':True},status=status.HTTP_200_OK)
     else:
         return Response({'usernametook':False},status=status.HTTP_200_OK)
+    

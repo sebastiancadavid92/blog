@@ -377,14 +377,14 @@ class CommentListPaginationViewTest(APITestCase):
         self.client.post(self.urllongin,datalogin,format='json')
         response=self.client.get(self.urllistcomment,format='json')
         self.assertEqual(response.data.get('count'),21)
-        self.assertEqual(len(response.data['results']),10)
+        self.assertEqual(len(response.data['results']),5)
         self.assertEqual(response.data['next'],'http://testserver/comments/?page=2')
         self.assertEqual(response.data['current'],1)
-        self.assertEqual(response.data['num_pages'],3)
+        self.assertEqual(response.data['num_pages'],5)
         response=self.client.get(response.data['next'],format='json')
         self.assertEqual(response.data['previous'],'http://testserver/comments/')
         self.assertEqual(response.data['current'],2)
-        self.assertEqual(len(response.data['results']),10)
+        self.assertEqual(len(response.data['results']),5)
         
     def testCommentFilterbyPost(self):
         datalogin={

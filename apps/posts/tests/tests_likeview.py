@@ -304,14 +304,14 @@ class LikeListPaginationViewTest(APITestCase):
         self.client.post(self.urllongin,datalogin,format='json')
         response=self.client.get(self.urllistlike,format='json')
         self.assertEqual(response.data.get('count'),21)
-        self.assertEqual(len(response.data['results']),20)
+        self.assertEqual(len(response.data['results']),15)
         self.assertEqual(response.data['next'],'http://testserver/likes/?page=2')
         self.assertEqual(response.data['current'],1)
         self.assertEqual(response.data['num_pages'],2)
         response=self.client.get(response.data['next'],format='json')
         self.assertEqual(response.data['previous'],'http://testserver/likes/')
         self.assertEqual(response.data['current'],2)
-        self.assertEqual(len(response.data['results']),1)
+        self.assertEqual(len(response.data['results']),6)
         
     def testLikeFilterbyPost(self):
         datalogin={

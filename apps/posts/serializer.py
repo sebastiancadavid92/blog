@@ -69,7 +69,7 @@ class CreationPostModelSerializer(ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        
+
         catserializer=self.context['categoryserializer']
         perserializer=self.context['permissionserializer']
         try :
@@ -78,7 +78,7 @@ class CreationPostModelSerializer(ModelSerializer):
             author=self.context['author']
             blog=Post.objects.create(author=author,**validated_data)
             data = [{'post':blog.id, 'category':categories[i][0].id,'permission':permissions[i][0].id} for i in range(0,len(categories))] 
-            
+           
             categorypermissionpost=PermissionCategoryPostModelSerializer(data=data,many=True)
             
             if not categorypermissionpost.is_valid():

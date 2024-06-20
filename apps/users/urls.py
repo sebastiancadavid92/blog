@@ -13,3 +13,4 @@ path('register/',RegisterView, name='register'),
 path('api/checkemail/<str:email>/',check_email, name='checkemail'),
 path('api/checkusername/<str:username>/',check_username, name='checkusername')]
 
+

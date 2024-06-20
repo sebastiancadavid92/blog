@@ -28,6 +28,8 @@ urlpatterns = [
     path('post/', include('apps.posts.urls.urlspost')),
     path('likes/',include('apps.posts.urls.urlslike')),
     path('comments/',include('apps.posts.urls.urlscomment')),
+    path('permissions/',include('apps.permissions.urls.urlspermission')),
+    path('categories/',include('apps.permissions.urls.urlscategory')),
     path('',LoginView),
 
 ]

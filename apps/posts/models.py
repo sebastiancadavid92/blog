@@ -10,6 +10,7 @@ class Post(models.Model):
     timestamp= models.DateTimeField(_('creation date'),auto_now_add=True)
     likes = models.ManyToManyField(User, through='Like', related_name='liked_users_posts' ,blank=True)
     comments= models.ManyToManyField(User, through='Comment',related_name='comments_users_posts' ,blank=True)
+    html= models.TextField(null=True,blank=True)
 
     def like_exists(self,userid):
         return self.likes.filter(id=userid).exists()# se usa asi pur que likes ya es un objeto manager de usario 

@@ -17,7 +17,7 @@ class CreationPostModelSerializer(ModelSerializer):
     categories=serializers.ListField(write_only=True)
     class Meta:
         model=Post
-        fields=['title','content','permissions','id','categories']
+        fields=['title','content','permissions','id','categories','html']
 
 
     def to_internal_value(self, data):
@@ -112,6 +112,7 @@ class CreationPostModelSerializer(ModelSerializer):
             rep['permission']={i.category.categoryname : i.permission.permissionname for i in per} 
             rep['edit']=self.__can_edit(self.context.get('request').user,instance,rep['permission'])
             rep['liked']=instance.like_exists(self.context.get('request').user.id)
+            rep['html']=instance.html
             return rep
     
                 

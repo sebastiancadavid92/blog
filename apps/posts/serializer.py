@@ -142,6 +142,7 @@ class CreationPostModelSerializer(ModelSerializer):
     def update(self, instance, validated_data):        
         instance.title=validated_data.get('title')
         instance.content=validated_data.get('content')
+        instance.html=validated_data.get('html')
         cate=self.context['categoryserializer'].save()
         perm=self.context['permissionserializer'].save()
         instance.postinverse.all().delete()

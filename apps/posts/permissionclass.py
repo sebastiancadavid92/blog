@@ -43,21 +43,21 @@ class PostPermissionEdit(BasePermission):
         permissiondict={i.category.categoryname:i.permission.permissionname for i in postpermissioncategory}
         team=obj.author.team
         user=request.user
-        if (not user.is_authenticated) and permissiondict.get('PUBLIC')=='NONE':
+        if (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='NONE' or permissiondict.get('PUBLIC')=='READ_ONLY') :
             return False
         elif (not user.is_authenticated) and (permissiondict.get('PUBLIC')=='EDIT'):
             return True     
         if user.is_admin:
             return True
-        if user==obj.author and permissiondict.get('AUTHOR')=='NONE':
+        if user==obj.author and (permissiondict.get('AUTHOR')=='NONE' or permissiondict.get('AUTHOR')=='READ_ONLY'):
             return False
         elif user==obj.author and (permissiondict.get('AUTHOR')=='EDIT'):
             return True
-        if team==user.team and permissiondict.get('TEAM')=='NONE':
+        if team==user.team and (permissiondict.get('TEAM')=='NONE' or permissiondict.get('TEAM')=='READ_ONLY'):
             return False
         elif user.team==team and (permissiondict.get('TEAM')=='EDIT' ):
             return True
-        if user.is_authenticated and permissiondict.get('AUTHENTICATED')=='NONE':
+        if user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='NONE' or permissiondict.get('AUTHENTICATED')=='READ_ONLY'):
             return False
         elif user.is_authenticated and (permissiondict.get('AUTHENTICATED')=='EDIT'):
             return True

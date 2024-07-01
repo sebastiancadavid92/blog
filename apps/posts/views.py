@@ -103,7 +103,7 @@ class CommentAPIView(GenericAPIView):
 
     def post(self, request, pk):      
         post=self.get_object()
-        serializer=CommentModelSerializer(data=request.data,context={"user":request.user,"post":post})
+        serializer=CommentModelSerializer(data=request.data,context={"request":request,"user":request.user,"post":post})
         if not serializer.is_valid():
             return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
         serializer.save()

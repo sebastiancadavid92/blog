@@ -216,9 +216,8 @@ class CommentModelSerializer(ModelSerializer):
                 'username':instance.user.username,
                 'post':instance.post.title,
                 'content':instance.content,
-                'timestamp':instance.timestamp.strftime('%Y-%m-%d %H:%M')
-                
-                
+                'timestamp':instance.timestamp.strftime('%Y-%m-%d %H:%M'),
+                'delete':self.context.get('request').user==instance.user
             }
         return rep
     
